@@ -24,4 +24,10 @@ public interface RandomizerIFace {
     void clearItems();
 
     void startNewRandomMeassure(GuiIFace guiIFace);
+
+    void saveItemsToFile(GuiIFace guiIFace, String name);
+
+    void loadItemsFromFile(GuiIFace guiIFace, String name);
+
+    void deleteItemFile(GuiIFace guiIFace, String name);
 }

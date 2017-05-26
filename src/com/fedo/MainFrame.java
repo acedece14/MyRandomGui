@@ -2,12 +2,9 @@ package com.fedo;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import static com.fedo.RandomizerIFace.EMPTY_TEXT;
 
@@ -29,6 +26,10 @@ public class MainFrame
     private JButton btnAddEmpty;
     private JButton btnClearItems;
     private JLabel lblStatistic;
+    private JButton btnSaveToFile;
+    private JComboBox<String> cbFilesToLoad;
+    private JButton btnLoadFromFile;
+    private JButton btnDeleteFile;
     private RandomizerIFace rmzer;
 
     MainFrame(RandomizerIFace randomizerIFace, String title) {
@@ -40,7 +41,7 @@ public class MainFrame
         updateVisual();
         setContentPane(pnlMain);
         pack();
-        setSize(400, 300);
+        setSize(500, 400);
         setLocationRelativeTo(null);
         setVisible(true);
     }
@@ -56,23 +57,18 @@ public class MainFrame
             e.printStackTrace();
         }
 
+        onUpdateFilesList();
+        updateVisual();
 
-        btnAddItem.addActionListener(e -> {
-            if (edtitemName.getText() != null && edtitemName.getText().length() > 0)
-                rmzer.addItem(edtitemName.getText());
-            edtitemName.setText("");
-            updateVisual();
-        });
-        btnRemoveItem.addActionListener(e -> {
-            if (lstItems.getModel().getSize() == 0 && lstItems.getSelectedIndex() < 0)
-                return;
-            int[] indexes = lstItems.getSelectedIndices();
-            for (int index : indexes) {
-                String item = lstItems.getModel().getElementAt(index);
-                rmzer.removeItem(item);
+        btnAddItem.addActionListener(e -> addItem());
+        edtitemName.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == 10)
+                    addItem();
             }
-            updateVisual();
         });
+        btnRemoveItem.addActionListener(e -> removeItem());
         btnAddEmpty.addActionListener(e -> {
             rmzer.addItem(EMPTY_TEXT);
             updateVisual();
@@ -81,6 +77,17 @@ public class MainFrame
             rmzer.clearItems();
             updateVisual();
         });
+        btnSaveToFile.addActionListener(e -> {
+            String name = JOptionPane.showInputDialog(this, "Enter name");
+            rmzer.saveItemsToFile(this, name);
+        });
+        btnLoadFromFile.addActionListener(e -> {
+            rmzer.loadItemsFromFile(this, (String) cbFilesToLoad.getSelectedItem());
+        });
+        btnDeleteFile.addActionListener(e -> {
+            rmzer.deleteItemFile(this, (String) cbFilesToLoad.getSelectedItem());
+        });
+
         lblRezult.addMouseListener(new MouseAdapter() {
 
             @Override
@@ -92,11 +99,33 @@ public class MainFrame
 
             @Override
             public void mouseReleased(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    removeItem();
+                    return;
+                }
                 int index = lstItems.getSelectedIndex();
                 if (index >= 0)
                     edtitemName.setText(lstItems.getModel().getElementAt(index));
             }
         });
+    }
+
+    private void removeItem() {
+
+        if (lstItems.getModel().getSize() == 0 && lstItems.getSelectedIndex() < 0)
+            return;
+        for (int index : lstItems.getSelectedIndices()) {
+            String item = lstItems.getModel().getElementAt(index);
+            rmzer.removeItem(item);
+        }
+        updateVisual();
+    }
+
+    private void addItem() {
+        if (edtitemName.getText() != null && edtitemName.getText().length() > 0)
+            rmzer.addItem(edtitemName.getText());
+        edtitemName.setText("");
+        updateVisual();
     }
 
     private void updateVisual() {
@@ -109,14 +138,37 @@ public class MainFrame
     }
 
     @Override
-    public void onUpdateResult(String rezult) {
+    public void onUpdateRandomResult(String rezult) {
 
         lblRezult.setText(rezult);
     }
 
     @Override
-    public void onFinishResult(String rezult) {
+    public void onFinishRandomResult(String rezult) {
 
         lblStatistic.setText(rezult);
+    }
+
+    @Override
+    public void onNoItemsToRandom() {
+
+        lblRezult.setText("No items");
+    }
+
+    @Override
+    public void onFewItemsToRandom() {
+
+        lblRezult.setText("Few items");
+    }
+
+    @Override
+    public void onUpdateFilesList() {
+        Object selected = cbFilesToLoad.getSelectedItem();
+        cbFilesToLoad.removeAllItems();
+        for (String file : Utils.getStoreFilesList())
+            cbFilesToLoad.addItem(file);
+        if (selected != null)
+            cbFilesToLoad.setSelectedItem(selected);
+        updateVisual();
     }
 }

@@ -5,7 +5,13 @@ package com.fedo;
  */
 public interface GuiIFace {
 
-    void onUpdateResult(String rezult);
+    void onUpdateRandomResult(String rezult);
 
-    void onFinishResult(String rezult);
+    void onFinishRandomResult(String rezult);
+
+    void onNoItemsToRandom();
+
+    void onFewItemsToRandom();
+
+    void onUpdateFilesList();
 }
