@@ -6,12 +6,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * //
  * Created by katz on 26.05.2017.
  */
-public class Randomizer implements RandomizerIFace {
+public class Randomizer
+        implements RandomizerIFace {
 
     private List<String> items = new ArrayList<>();
     private String lastRandom = "";
@@ -74,6 +76,35 @@ public class Randomizer implements RandomizerIFace {
         items.clear();
     }
 
+    @Override
+    public void startNewRandomMeassure(GuiIFace guiIFace) {
+        new Thread(() -> {
+            int count = 500;
+            // value count
+            Map<String, Integer> map = new HashMap<>();
+            while (count-- > 0 || getRandom().equals(EMPTY_TEXT)) {
+                guiIFace.onUpdateResult(getNextRandom());
+                if (map.containsKey(getRandom()))
+                    map.put(getRandom(), map.get(getRandom()) + 1);
+                else if (!getRandom().equals(EMPTY_TEXT))
+                    map.put(getRandom(), 1);
+                try {
+                    Thread.sleep(2);
+                } catch (InterruptedException ignored) {
+                }
+            }
+            StringBuilder rezult = new StringBuilder();
+            map = sortByValue(map);
+            for (Map.Entry<String, Integer> entry : map.entrySet()) {
+                rezult.insert(0, String.format("<b>%s</b> %d<br>", entry.getKey(), entry.getValue()));
+                guiIFace.onUpdateResult(entry.getKey());
+            }
+            rezult.insert(0, "<html>");
+            rezult.append("</html>");
+            guiIFace.onFinishResult(rezult.toString());
+        }).start();
+    }
+
     private static final java.io.File DATA_STORE_DIR =
             new java.io.File(System.getProperty("user.home"), ".random");
     private Path savePath = Paths.get(DATA_STORE_DIR + "/items.txt");
@@ -95,6 +126,18 @@ public class Randomizer implements RandomizerIFace {
             e.printStackTrace();
         }
         sortItems();
+    }
+
+    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue(Map<K, V> map) {
+        return map.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByValue())
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
     }
 
 }

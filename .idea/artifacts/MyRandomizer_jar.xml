@@ -5,6 +5,7 @@
       <element id="module-output" name="MyRandomizer" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/jgoodies-forms-1.9.0.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$PROJECT_DIR$/lib/jgoodies-common-1.8.1.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$PROJECT_DIR$/lib/JTattoo-1.6.11.jar" path-in-jar="/" />
     </root>
   </artifact>
 </component>

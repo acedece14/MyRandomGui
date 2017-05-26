@@ -1,5 +1,6 @@
 package com.fedo;
 
+import java.awt.event.MouseAdapter;
 import java.util.List;
 
 /**
@@ -21,4 +22,6 @@ public interface RandomizerIFace {
     String getNextRandom();
 
     void clearItems();
+
+    void startNewRandomMeassure(GuiIFace guiIFace);
 }

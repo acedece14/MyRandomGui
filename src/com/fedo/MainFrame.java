@@ -2,13 +2,9 @@ package com.fedo;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.table.TableColumn;
-import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +15,10 @@ import static com.fedo.RandomizerIFace.EMPTY_TEXT;
  * //
  * Created by katz on 26.05.2017.
  */
-public class MainFrame extends JFrame {
+public class MainFrame
+        extends JFrame
+        implements GuiIFace {
+
     private static final String LOGO_FILENAME = "logo-128.png";
     private JPanel pnlMain;
     private JButton btnAddItem;
@@ -29,7 +28,7 @@ public class MainFrame extends JFrame {
     private JLabel lblRezult;
     private JButton btnAddEmpty;
     private JButton btnClearItems;
-    private JLabel lblRezults;
+    private JLabel lblStatistic;
     private RandomizerIFace rmzer;
 
     MainFrame(RandomizerIFace randomizerIFace, String title) {
@@ -86,32 +85,7 @@ public class MainFrame extends JFrame {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-
-                new Thread(() -> {
-                    int count = 500;
-                    // value count
-                    Map<String, Integer> map = new HashMap<>();
-                    while (count-- > 0 || rmzer.getRandom().equals(EMPTY_TEXT)) {
-                        lblRezult.setText(rmzer.getNextRandom());
-                        if (map.containsKey(rmzer.getRandom()))
-                            map.put(rmzer.getRandom(), map.get(rmzer.getRandom()) + 1);
-                        else if (!rmzer.getRandom().equals(EMPTY_TEXT))
-                            map.put(rmzer.getRandom(), 1);
-                        try {
-                            Thread.sleep(2);
-                        } catch (InterruptedException ignored) {
-                        }
-                    }
-                    StringBuilder rezult = new StringBuilder();
-                    for (Map.Entry<String, Integer> entry : map.entrySet()) {
-                        String key = entry.getKey();
-                        Integer value = entry.getValue();
-                        rezult.append(String.format("%s %d<br>", key, value));
-                    }
-                    rezult.insert(0, "<html>");
-                    rezult.append("</html>");
-                    lblRezults.setText(rezult.toString());
-                }).start();
+                rmzer.startNewRandomMeassure(MainFrame.this);
             }
         });
         lstItems.addMouseListener(new MouseAdapter() {
@@ -134,4 +108,15 @@ public class MainFrame extends JFrame {
         lstItems.setModel(model);
     }
 
+    @Override
+    public void onUpdateResult(String rezult) {
+
+        lblRezult.setText(rezult);
+    }
+
+    @Override
+    public void onFinishResult(String rezult) {
+
+        lblStatistic.setText(rezult);
+    }
 }
